@@ -1,0 +1,26 @@
+post_install() {
+    getent group uinput >/dev/null 2>&1 || groupadd -r uinput
+    if command -v udevadm >/dev/null 2>&1; then
+        udevadm control --reload-rules >/dev/null 2>&1 || true
+        udevadm trigger --name-match=uinput >/dev/null 2>&1 || true
+    fi
+    cat <<'EOF'
+==> DrivePad Companion post-install setup (non-root uinput):
+    1. Load uinput module persistently:
+         sudo modprobe uinput
+         echo "uinput" | sudo tee /etc/modules-load.d/uinput.conf
+    2. Grant your user access (log out & back in afterwards):
+         sudo usermod -aG uinput <your-username>
+    3. Allow UDP port 42100 in firewall if active (e.g. ufw allow 42100/udp).
+    4. Run environment check:
+         drivepad-companion --check
+EOF
+}
+
+post_upgrade() {
+    post_install
+}
+
+post_remove() {
+    echo "==> User config remains in ~/.config/drivepad-companion/ and can be removed manually if desired."
+}

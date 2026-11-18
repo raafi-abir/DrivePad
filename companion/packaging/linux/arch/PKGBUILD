@@ -1,0 +1,36 @@
+# Maintainer: DrivePad Contributors
+pkgname=drivepad-companion
+pkgver=1.0.0
+pkgrel=1
+pkgdesc="Cross-platform UDP virtual gamepad and ETS2 controller companion for DrivePad Android"
+arch=('x86_64' 'aarch64')
+url="https://github.com/drivepad/drivepad"
+license=('Apache-2.0')
+depends=('java-runtime>=21')
+install=drivepad-companion.install
+source=("drivepad-companion-${pkgver}-linux-x64.tar.gz")
+sha256sums=('SKIP')
+
+package() {
+    cd "$srcdir/drivepad-companion-${pkgver}"
+
+    install -Dm644 "lib/drivepad-companion-${pkgver}-all.jar" \
+        "$pkgdir/usr/share/java/$pkgname/drivepad-companion-${pkgver}-all.jar"
+
+    install -dm755 "$pkgdir/usr/bin"
+    cat > "$pkgdir/usr/bin/$pkgname" <<EOF
+#!/usr/bin/env sh
+set -eu
+exec java -jar /usr/share/java/$pkgname/drivepad-companion-${pkgver}-all.jar "\$@"
+EOF
+    chmod 755 "$pkgdir/usr/bin/$pkgname"
+
+    install -Dm644 "udev/99-drivepad-uinput.rules" \
+        "$pkgdir/usr/lib/udev/rules.d/99-drivepad-uinput.rules"
+
+    install -Dm644 "README.txt" \
+        "$pkgdir/usr/share/doc/$pkgname/README.txt"
+
+    install -Dm644 "THIRD_PARTY_NOTICES.md" \
+        "$pkgdir/usr/share/doc/$pkgname/THIRD_PARTY_NOTICES.md"
+}
