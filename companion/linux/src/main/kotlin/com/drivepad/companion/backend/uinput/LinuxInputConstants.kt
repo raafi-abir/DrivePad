@@ -102,7 +102,28 @@ object LinuxInputConstants {
     /**
      * Serializes `struct uinput_setup` (92 bytes):
      * - 0..7   : `struct input_id { bustype(u16), vendor(u16), product(u16), version(u16) }`
-     * - 8..87  : `char name[80]` (NUL-terminated UTF-8, zero-padded)
+    
+fun encodeInputEventInto(
+    type: Int,
+    code: Int,
+    value: Int,
+    out: ByteArray,
+    offset: Int = 0,
+    byteOrder: ByteOrder = ByteOrder.nativeOrder()
+) {
+    require(offset >= 0 && offset + INPUT_EVENT_SIZE_BYTES <= out.size) {
+        "Buffer too small for struct input_event at offset $offset"
+    }
+
+    val bb = ByteBuffer.wrap(out).order(byteOrder)
+
+    bb.putLong(offset, 0L)
+    bb.putLong(offset + 8, 0L)
+    bb.putShort(offset + 16, (type and 0xFFFF).toShort())
+    bb.putShort(offset + 18, (code and 0xFFFF).toShort())
+    bb.putInt(offset + 20, value)
+}
+ * - 8..87  : `char name[80]` (NUL-terminated UTF-8, zero-padded)
      * - 88..91 : `__u32 ff_effects_max` (0)
      */
     fun encodeUInputSetup(
